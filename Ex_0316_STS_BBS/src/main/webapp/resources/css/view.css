@@ -1,0 +1,42 @@
+#wrap>h2 {
+	text-align:left;
+	margin-left:20px;
+	margin-bottom:30px;
+}
+
+.tt {
+	margin-left:20px;
+}
+
+table {
+	width: 600px;
+	border: 0px;
+	border-spacing: 0px;
+}
+
+table th {
+	weight:100px;
+	height:30px;
+	text-align:center;
+	background-color:#669AB3;
+	color:#fff;
+}
+
+table td {
+	background-color:#F2F7F9;
+}
+
+table tr, th, td {
+	border:1px solid #efefef;
+}
+
+.line {
+	height:2px;
+	background-color:#C3C3C3;
+}
+
+.btn {
+	width:56px;
+	height:21px;
+	cursor: pointer;
+}

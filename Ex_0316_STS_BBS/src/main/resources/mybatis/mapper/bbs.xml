@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+<mapper namespace="bbs">
+
+	<!-- 페이징 기법을 위해 전체 게시물의 수 반환-->
+	<select id="totalCount" resultType="int" parameterType="String">
+		select count(*) from bbs
+		where bname=#{bname} and status=0
+	</select>	
+	
+	
+	<!-- 페이징 기법을 활용한 게시물 목록 보기 -->
+	<select id="list" resultType="mybatis.vo.BbsVO" parameterType="java.util.Map">
+		SELECT * FROM (
+			SELECT rownum as r_num, a.* 
+			FROM (
+				SELECT * FROM bbs
+				WHERE bname=#{bname} AND status=0 
+				ORDER BY groups DESC, lev ASC
+			) a
+		) WHERE r_num BETWEEN #{begin} AND #{end}
+	</select>
+	
+	
+	<!-- 게시물 내용 보기 -->
+	<select id="getBbs" resultType="mybatis.vo.BbsVO" parameterType="String">
+		select * from bbs
+		where seq = #{seq} and status = 0
+	</select>
+	
+	
+	
+	<!-- 게시물 저장 (원글) -->
+	<insert id="write" parameterType="mybatis.vo.BbsVO">
+		<if test="uploadFileName != null">
+			insert into	bbs(seq, writer, title, content, pwd, hit, 
+				groups, step, lev, bname, regdate, uploadFileName, ip, status) 
+			values(bbs_seq.NEXTVAL, #{writer}, #{title}, #{content}, #{pwd}, 0, 
+				bbs_group.NEXTVAL, 0, 0, 'BBS', sysdate, #{uploadFileName}, #{ip}, 0)
+		</if>
+		
+		<if test="uploadFileName == null">
+			insert into	bbs(seq, writer, title, content, pwd, hit, 
+				groups, step, lev, bname, regdate, ip, status) 
+			values(bbs_seq.NEXTVAL, #{writer}, #{title}, #{content}, #{pwd}, 0, 
+				bbs_group.NEXTVAL, 0, 0, 'BBS', sysdate, #{ip}, 0)
+		</if>	
+	</insert>
+	
+					
+	<!-- 게시물 수정 -->
+	<update id="edit" parameterType="mybatis.vo.BbsVO">		
+		update bbs
+		set writer=#{writer}, title=#{title}, content=#{content}, pwd=#{pwd}, ip=#{ip}
+		<if test="uploadFileName != null">
+		, uploadFileName=#{uploadFileName}
+		</if>						
+		where seq = #{seq}			
+	</update>
+		
+	
+	<!-- 게시물 삭제 -->
+	<update id="delete" parameterType="String">
+		update bbs
+		set status = 1
+		where seq = #{seq}
+	</update>
+	
+	
+	
+	<!-- 답변 저장하기 전에 lev (순서) 값을 1씩 증가
+	
+		(조건) 	1.참조글의 groups와 같고, 
+				2.참조글의 lev값보다 큰 글 -->
+				
+	<update id="updateLev" parameterType="java.util.Map">
+		update bbs
+		set lev = lev+1
+		where groups = #{groups} and lev &gt; #{lev} 
+	</update>			
+				
+				
+	<!-- 답글 저장 -->
+	<insert id="writeAns" parameterType="mybatis.vo.BbsVO">
+		<if test="uploadFileName != null">
+			insert into	bbs(seq, writer, title, content, pwd, hit, 
+				groups, step, lev, bname, regdate, uploadFileName, ip, status) 
+			values(bbs_seq.NEXTVAL, #{writer}, #{title}, #{content}, #{pwd}, 0, 
+				#{groups}, #{step}, #{lev}, 'BBS', sysdate, #{uploadFileName}, #{ip}, 0)		
+		</if>
+		
+		<if test="uploadFileName == null">
+			insert into	bbs(seq, writer, title, content, pwd, hit, 
+				groups, step, lev, bname, regdate,ip, status) 
+			values(bbs_seq.NEXTVAL, #{writer}, #{title}, #{content}, #{pwd}, 0, 
+				#{groups}, #{step}, #{lev}, 'BBS', sysdate, #{ip}, 0)		
+		</if>
+	</insert>			
+
+	
+</mapper>
